@@ -1,0 +1,11 @@
+[repository]
+name = "Hypro"
+authors = ["KZdkm"]
+
+[Hypro]
+description = "Irregular scrren adaptation"
+authors = ["KZdkm"]
+output = "Hypro.so"
+build = [
+    "make all"
+]
