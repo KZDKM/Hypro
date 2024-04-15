@@ -47,9 +47,9 @@ void onRender(std::any args) {
                 }
             }
             CBox monBox = CBox(m->vecPosition, m->vecTransformedSize);
-            CRegion damage = CRegion(monBox);
-            if (maskAlpha.isBeingAnimated())
-                g_pHyprOpenGL->renderRectWithDamage(&monBox, CColor(0, 0, 0, maskAlpha.value()), &damage);
+            g_pHyprRenderer->damageMonitor(m);
+            if (maskAlpha.value() > 0.f)
+                g_pHyprOpenGL->renderRect(&monBox, CColor(0, 0, 0, maskAlpha.value()));
         }
     }
 }
