@@ -6,7 +6,7 @@ inline HANDLE pHandle;
 
 APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
-} 
+}
 
 std::string monitor = "eDP-1";
 int top = 0;
@@ -21,8 +21,8 @@ void onTick() {
         if (w->m_bIsFullscreen && w->m_pWorkspace->m_efFullscreenMode == FULLSCREEN_FULL) {
             const auto m = g_pCompositor->getMonitorFromID(w->m_iMonitorID);
             if (m != g_pCompositor->getMonitorFromString(monitor)) continue;
-            const Vector2D pos = { m->vecPosition.x + (left / m->scale), m->vecPosition.y + (top / m->scale) };
-            const Vector2D size = { m->vecSize.x - (left / m->scale) - (right / m->scale), m->vecSize.y - (top / m->scale) - (bottom / m->scale) };
+            const Vector2D pos = {m->vecPosition.x + (left / m->scale), m->vecPosition.y + (top / m->scale)};
+            const Vector2D size = {m->vecSize.x - (left / m->scale) - (right / m->scale), m->vecSize.y - (top / m->scale) - (bottom / m->scale)};
             if (w->m_vRealPosition.goal() != pos)
                 w->m_vRealPosition = pos;
             if (w->m_vRealSize.goal() != size)
@@ -47,9 +47,9 @@ void onRender(std::any args) {
                 }
             }
             CBox monBox = CBox(m->vecPosition, m->vecTransformedSize);
-            g_pHyprRenderer->damageMonitor(m);
-            if (maskAlpha.value() > 0.f)
-                g_pHyprOpenGL->renderRect(&monBox, CColor(0, 0, 0, maskAlpha.value()));
+            if (maskAlpha.value() > 0.f && maskAlpha.isBeingAnimated())
+                g_pHyprRenderer->damageMonitor(m);
+            g_pHyprOpenGL->renderRect(&monBox, CColor(0, 0, 0, maskAlpha.value()));
         }
     }
 }
