@@ -8,6 +8,10 @@ APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
 }
 
+std::shared_ptr<HOOK_CALLBACK_FN> tickHook;
+std::shared_ptr<HOOK_CALLBACK_FN> renderHook;
+std::shared_ptr<HOOK_CALLBACK_FN> configHook;
+
 std::string monitor = "eDP-1";
 int top = 0;
 int bottom = 0;
@@ -39,10 +43,11 @@ void onRender(std::any args) {
         const auto m = g_pCompositor->getMonitorFromName(monitor);
         if (g_pHyprOpenGL->m_RenderData.pMonitor == m) {
             if (m->activeWorkspace) {
-                if (m->activeWorkspace->m_bHasFullscreenWindow && m->activeWorkspace->m_efFullscreenMode == FULLSCREEN_FULL && maskAlpha.goal() != 1.f) {
+                if (m->activeWorkspace->m_bHasFullscreenWindow && m->activeWorkspace->m_efFullscreenMode == FULLSCREEN_FULL && g_pInputManager->m_sActiveSwipe.pWorkspaceBegin == nullptr) {
+                    if (maskAlpha.goal() != 1.f)
                     maskAlpha = 1.f;
                 }
-                else if (!(m->activeWorkspace->m_bHasFullscreenWindow && m->activeWorkspace->m_efFullscreenMode == FULLSCREEN_FULL) && maskAlpha.goal() != 0.f) {
+                else if (maskAlpha.goal() != 0.f) {
                     maskAlpha = 0.f;
                 }
             }
@@ -74,11 +79,11 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE inHandle) {
     HyprlandAPI::addConfigValue(pHandle, "plugin:hypro:left", Hyprlang::INT{0});
     HyprlandAPI::addConfigValue(pHandle, "plugin:hypro:right", Hyprlang::INT{0});
 
-    HyprlandAPI::registerCallbackDynamic(pHandle, "configReloaded", [&] (void* thisptr, SCallbackInfo& info, std::any data) { reloadConfig(); });
+    configHook = HyprlandAPI::registerCallbackDynamic(pHandle, "configReloaded", [&] (void* thisptr, SCallbackInfo& info, std::any data) { reloadConfig(); });
     HyprlandAPI::reloadConfig();
 
-    HyprlandAPI::registerCallbackDynamic(pHandle, "tick", [&] (void* thisptr, SCallbackInfo& info, std::any data) { onTick(); });
-    HyprlandAPI::registerCallbackDynamic(pHandle, "render", [&] (void* thisptr, SCallbackInfo& info, std::any data) { onRender(data); });
+    tickHook = HyprlandAPI::registerCallbackDynamic(pHandle, "tick", [&] (void* thisptr, SCallbackInfo& info, std::any data) { onTick(); });
+    renderHook = HyprlandAPI::registerCallbackDynamic(pHandle, "render", [&] (void* thisptr, SCallbackInfo& info, std::any data) { onRender(data); });
 
     return {"Hypro", "Irregular screen adaptation", "KZdkm", "0.1"};
 }
