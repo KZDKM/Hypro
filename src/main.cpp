@@ -8,9 +8,9 @@ APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
 }
 
-std::shared_ptr<HOOK_CALLBACK_FN> tickHook;
-std::shared_ptr<HOOK_CALLBACK_FN> renderHook;
-std::shared_ptr<HOOK_CALLBACK_FN> configHook;
+Hyprutils::Memory::CSharedPointer<HOOK_CALLBACK_FN> tickHook;
+Hyprutils::Memory::CSharedPointer<HOOK_CALLBACK_FN> renderHook;
+Hyprutils::Memory::CSharedPointer<HOOK_CALLBACK_FN> configHook;
 
 std::string monitor = "eDP-1";
 int top = 0;
