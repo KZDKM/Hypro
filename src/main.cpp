@@ -7,6 +7,7 @@
 #include <hyprland/src/managers/AnimationManager.hpp>
 #include <hyprland/src/config/ConfigValue.hpp>
 #include <hyprland/src/render/pass/RectPassElement.hpp>
+#include <hyprland/src/config/ConfigManager.hpp>
 
 inline HANDLE pHandle;
 
@@ -27,16 +28,16 @@ int right = 0;
 PHLANIMVAR<float> maskAlpha;
 
 void onTick() {
-    for (auto& w : g_pCompositor->m_vWindows) {
-        if (w->isFullscreen() && w->m_pWorkspace->m_efFullscreenMode == FSMODE_FULLSCREEN) {
-            const auto m = w->m_pMonitor;
+    for (auto& w : g_pCompositor->m_windows) {
+        if (w->isFullscreen() && w->m_workspace->m_fullscreenMode == FSMODE_FULLSCREEN) {
+            const auto m = w->m_monitor;
             if (m != g_pCompositor->getMonitorFromString(monitor)) continue;
-            const Vector2D pos = Vector2D(m->vecPosition.x + (left / m->scale), m->vecPosition.y + (top / m->scale));
-            const Vector2D size = Vector2D(m->vecSize.x - (left / m->scale) - (right / m->scale), m->vecSize.y - (top / m->scale) - (bottom / m->scale));
-            if (w->m_vRealPosition->goal() != pos)
-                *w->m_vRealPosition = pos;
-            if (w->m_vRealSize->goal() != size)
-                *w->m_vRealSize = size;
+            const Vector2D pos = Vector2D(m->m_position.x + (left / m->m_scale), m->m_position.y + (top / m->m_scale));
+            const Vector2D size = Vector2D(m->m_size.x - (left / m->m_scale) - (right / m->m_scale), m->m_size.y - (top / m->m_scale) - (bottom / m->m_scale));
+            if (w->m_realPosition->goal() != pos)
+                *w->m_realPosition = pos;
+            if (w->m_realSize->goal() != size)
+                *w->m_realSize = size;
         }
     }
 
@@ -46,7 +47,7 @@ void renderRect(CBox box, CHyprColor color) {
     CRectPassElement::SRectData rectdata;
     rectdata.color = color;
     rectdata.box = box;
-    g_pHyprRenderer->m_sRenderPass.add(makeShared<CRectPassElement>(rectdata));
+    g_pHyprRenderer->m_renderPass.add(makeShared<CRectPassElement>(rectdata));
 }
 
 void onRender(std::any args) {
@@ -54,9 +55,9 @@ void onRender(std::any args) {
 
     if (renderStage == eRenderStage::RENDER_PRE_WINDOWS) {
         const auto m = g_pCompositor->getMonitorFromName(monitor);
-        if (g_pHyprOpenGL->m_RenderData.pMonitor == m) {
-            if (m->activeWorkspace) {
-                if (m->activeWorkspace->m_bHasFullscreenWindow && m->activeWorkspace->m_efFullscreenMode == FSMODE_FULLSCREEN && g_pInputManager->m_sActiveSwipe.pWorkspaceBegin == nullptr) {
+        if (g_pHyprOpenGL->m_renderData.pMonitor == m) {
+            if (m->m_activeWorkspace) {
+                if (m->m_activeWorkspace->m_hasFullscreenWindow && m->m_activeWorkspace->m_fullscreenMode == FSMODE_FULLSCREEN && g_pInputManager->m_activeSwipe.pWorkspaceBegin == nullptr) {
                     if (maskAlpha->goal() != 1.f)
                     *maskAlpha = 1.f;
                 }
@@ -64,7 +65,7 @@ void onRender(std::any args) {
                     *maskAlpha = 0.f;
                 }
             }
-            CBox monBox = CBox(m->vecPosition, m->vecTransformedSize);
+            CBox monBox = CBox(m->m_position, m->m_transformedSize);
             if (maskAlpha->value() > 0.f && maskAlpha->isBeingAnimated())
                 g_pHyprRenderer->damageMonitor(m);
             renderRect(monBox, CHyprColor(0, 0, 0, maskAlpha->value()));
